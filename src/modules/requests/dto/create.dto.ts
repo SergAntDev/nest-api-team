@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, Length } from 'class-validator';
 
 export class CreateRequestDto {
   @ApiProperty({ description: 'Request reason', example: 'reason' })
@@ -11,6 +11,7 @@ export class CreateRequestDto {
     example: 'comment',
     maxLength: 1000,
   })
+  @Length(0, 1000)
   @IsNotEmpty()
   comment: string;
 

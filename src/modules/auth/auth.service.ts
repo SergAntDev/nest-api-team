@@ -17,7 +17,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.getUser({ where: { email } });
 
     if (!user) throw new BadRequestException();
@@ -29,13 +29,10 @@ export class AuthService {
   }
 
   async login(user: User) {
-    delete user.password;
-    const data = {
-      user,
-    };
+    const payload = { email: user.email, sub: user.id };
 
     return {
-      access_token: this.jwtService.sign(data),
+      access_token: this.jwtService.sign(payload),
     };
   }
 

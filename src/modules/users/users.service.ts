@@ -8,8 +8,9 @@ import {
 } from 'typeorm';
 
 import { CreateUserDto } from './dto/user-create.req.dto';
-import { User } from './users.entity';
 import { SqlErrorCode } from 'db/enum/errorCodes.enum';
+import { User } from './users.entity';
+import { Requests } from '../requests/requests.entity';
 
 @Injectable()
 export class UserService {
@@ -39,11 +40,29 @@ export class UserService {
   }
 
   async getAll(): Promise<User[]> {
-    return this.usersRepository.find();
+    return await this.usersRepository.find();
+  }
+
+  async getRequests(user: User): Promise<Requests[]> {
+    try {
+      const findUser = await this.usersRepository.findOne({
+        where: { id: user.id },
+        relations: { requests: true },
+      });
+      if (findUser) {
+        return findUser.requests;
+      }
+      return [];
+    } catch (error) {
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async getUser(options: FindOneOptions): Promise<User | undefined> {
-    return this.usersRepository.findOne(options);
+    return await this.usersRepository.findOne(options);
   }
 
   async update(

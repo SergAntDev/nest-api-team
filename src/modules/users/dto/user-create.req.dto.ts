@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, Length, Matches } from 'class-validator';
-import { MESSAGES, REGEX } from 'src/app.utils';
+import { MESSAGES, REGEX } from 'src/modules/users/pipes/user-create.pipe';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'User first name', example: 'admin' })

@@ -11,16 +11,18 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiBadRequestResponse,
+  ApiOkResponse,
   ApiTags,
+  ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
 
+import { SETTINGS } from 'src/modules/users/pipes/user-create.pipe';
 import { AuthUser } from '../users/decorator/users.decorator';
 import { User } from '../users/users.entity';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { LocalAuthGuard } from './guard/local-auth.guard';
 import { CreateUserDto } from '../users/dto/user-create.req.dto';
-import { SETTINGS } from 'src/app.utils';
 import { LoginDto } from './dto/login.dto';
 
 @ApiTags('Auth')
@@ -49,7 +51,9 @@ export class AuthController {
     description: 'Created user object as response',
     type: User,
   })
+  @ApiOkResponse({ type: User, description: 'Successfully created user' })
   @ApiBadRequestResponse({ description: 'User cannot register. Try again!' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async register(
     @Body(SETTINGS.VALIDATION_PIPE)
     newUser: CreateUserDto,
