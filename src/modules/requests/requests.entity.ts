@@ -5,6 +5,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../users/users.entity';
@@ -36,5 +37,9 @@ export class Requests extends BaseEntity {
 
   @ApiProperty({ description: 'When request was created' })
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
+
+  @ApiProperty({ description: 'When user was updated' })
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

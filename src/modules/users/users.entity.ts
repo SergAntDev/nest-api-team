@@ -6,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -14,6 +15,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { UserRoles } from './enums/users.enum';
 import { Requests } from '../requests/requests.entity';
+import { Profiles } from '../profiles/profiles.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -23,11 +25,11 @@ export class User extends BaseEntity {
 
   @ApiProperty({ description: 'User first name', example: 'admin' })
   @Column()
-  first_name: string;
+  firstName: string;
 
   @ApiProperty({ description: 'User second name', example: 'Admin' })
   @Column()
-  second_name: string;
+  secondName: string;
 
   @ApiProperty({
     description: 'User email address',
@@ -50,13 +52,19 @@ export class User extends BaseEntity {
   @JoinColumn()
   requests: Requests[];
 
+  @OneToOne(() => Profiles, {
+    eager: true,
+  })
+  @JoinColumn()
+  profile: Profiles;
+
   @ApiProperty({ description: 'When user was created' })
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @ApiProperty({ description: 'When user was updated' })
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 
   @BeforeInsert()
   async setPassword(password: string) {

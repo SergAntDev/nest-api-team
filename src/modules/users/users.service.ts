@@ -1,32 +1,50 @@
 import { HttpException, Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DeleteResult,
-  FindOneOptions,
-  Repository,
-  UpdateResult,
-} from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 
 import { CreateUserDto } from './dto/user-create.req.dto';
+import { UpdateUserDto } from './dto/user-update.req.dto';
 import { SqlErrorCode } from 'db/enum/errorCodes.enum';
 import { User } from './users.entity';
-import { Requests } from '../requests/requests.entity';
+import { Profiles } from '../profiles/profiles.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Profiles)
+    private profilesRepository: Repository<Profiles>,
   ) {}
 
   async create(newUser: CreateUserDto): Promise<User> {
     const user = this.usersRepository.create();
-    user.first_name = newUser.first_name;
-    user.second_name = newUser.second_name;
+    user.firstName = newUser.firstName;
+    user.secondName = newUser.secondName;
     user.email = newUser.email;
     user.password = newUser.password;
 
     try {
+      if (
+        newUser?.profile &&
+        Object.keys(newUser?.profile)?.length !== 0 &&
+        newUser?.profile?.constructor === Object
+      ) {
+        const newProfile = this.profilesRepository.create();
+        const { phone, slackId, position, department, birthDate, hiredDate } =
+          newUser.profile;
+        const savedProfile = await this.profilesRepository.save({
+          ...newProfile,
+          phone,
+          slackId,
+          position,
+          department,
+          birthDate,
+          hiredDate,
+        });
+        user.profile = savedProfile;
+      }
+
       return await this.usersRepository.save(user);
     } catch (error) {
       if (error?.code === SqlErrorCode.DUPLICATE_ENTRY) {
@@ -43,17 +61,53 @@ export class UserService {
     return await this.usersRepository.find();
   }
 
-  async getRequests(user: User): Promise<Requests[]> {
+  async getUser(options: FindOneOptions): Promise<User | undefined> {
+    return await this.usersRepository.findOne(options);
+  }
+
+  async update(id: string, data: UpdateUserDto): Promise<User | undefined> {
     try {
-      const findUser = await this.usersRepository.findOne({
-        where: { id: user.id },
-        relations: { requests: true },
-      });
-      if (findUser) {
-        return findUser.requests;
+      const user = await this.getUser({ where: { id } });
+      if (user) {
+        const { firstName, secondName, email } = data;
+        const updatedUser = await this.usersRepository.save({
+          ...user,
+          firstName,
+          secondName,
+          email,
+        });
+        if (
+          data?.profile &&
+          Object.keys(data?.profile)?.length !== 0 &&
+          data?.profile?.constructor === Object
+        ) {
+          const currentProfile = await this.profilesRepository.findOne({
+            where: { id: user.profile.id },
+          });
+
+          const { phone, slackId, position, department, birthDate, hiredDate } =
+            data.profile;
+          const savedProfile = await this.profilesRepository.save({
+            ...currentProfile,
+            phone,
+            slackId,
+            position,
+            department,
+            birthDate,
+            hiredDate,
+          });
+          updatedUser.profile = savedProfile;
+        }
+        return updatedUser;
       }
-      return [];
+      throw new HttpException(
+        'A user with given id does not exist.',
+        HttpStatus.NOT_FOUND,
+      );
     } catch (error) {
+      if (error) {
+        throw error;
+      }
       throw new HttpException(
         'Something went wrong',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -61,22 +115,29 @@ export class UserService {
     }
   }
 
-  async getUser(options: FindOneOptions): Promise<User | undefined> {
-    return await this.usersRepository.findOne(options);
-  }
+  async remove(id: number | string): Promise<any> {
+    try {
+      const user = await this.getUser({ where: { id } });
+      if (user) {
+        await this.usersRepository.delete(id);
+        return {
+          statusCode: 200,
+          message: 'User was deleted',
+        };
+      }
 
-  async update(
-    id: string,
-    data: object,
-  ): Promise<User | UpdateResult | undefined> {
-    const user = await this.getUser({ where: { id } });
-    if (user) {
-      return await this.usersRepository.update(id, data);
+      throw new HttpException(
+        'A user with given id does not exist.',
+        HttpStatus.NOT_FOUND,
+      );
+    } catch (error) {
+      if (error) {
+        throw error;
+      }
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-    return;
-  }
-
-  async remove(id: number | string): Promise<DeleteResult> {
-    return await this.usersRepository.delete(id);
   }
 }

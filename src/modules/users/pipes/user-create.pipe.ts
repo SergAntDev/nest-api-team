@@ -1,12 +1,10 @@
-import { HttpStatus, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from 'src/shared/pipes/validation.pipe';
 
 const PASSWORD_RULE = /^(?=.*?[0-9]).{8,}$/;
 
 const PASSWORD_RULE_MESSAGE = 'Incorrect password';
 
-const VALIDATION_PIPE = new ValidationPipe({
-  errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-});
+const VALIDATION_PIPE = new ValidationPipe();
 
 export const REGEX = {
   PASSWORD_RULE,

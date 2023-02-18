@@ -1,15 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, Length, Matches } from 'class-validator';
+
+import { CreateProfileDto } from 'src/modules/profiles/dto/create.dto';
 import { MESSAGES, REGEX } from 'src/modules/users/pipes/user-create.pipe';
+import { Match } from '../decorator/match.decorator';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'User first name', example: 'admin' })
   @IsNotEmpty()
-  first_name: string;
+  firstName: string;
 
   @ApiProperty({ description: 'User second name', example: 'admin' })
   @IsNotEmpty()
-  second_name: string;
+  secondName: string;
 
   @ApiProperty({
     description: 'The email address of the User',
@@ -35,5 +38,12 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Length(8, 24)
   @Matches(REGEX.PASSWORD_RULE, { message: MESSAGES.PASSWORD_RULE_MESSAGE })
+  @Match('password')
   confirm: string;
+
+  @ApiProperty({
+    description: 'User Profile',
+    type: CreateProfileDto,
+  })
+  profile: CreateProfileDto;
 }

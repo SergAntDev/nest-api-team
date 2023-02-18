@@ -14,9 +14,11 @@ import {
   ApiOkResponse,
   ApiTags,
   ApiInternalServerErrorResponse,
+  ApiResponse,
 } from '@nestjs/swagger';
 
 import { SETTINGS } from 'src/modules/users/pipes/user-create.pipe';
+import { RequestWithUser } from 'src/interfaces/request-user.interface';
 import { AuthUser } from '../users/decorator/users.decorator';
 import { User } from '../users/users.entity';
 import { AuthService } from './auth.service';
@@ -37,11 +39,12 @@ export class AuthController {
     type: User,
   })
   @ApiBadRequestResponse({ description: 'User exists. Try again!', type: User })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async login(
-    @Request() req,
+    @Request() req: RequestWithUser,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() login: LoginDto,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ accessToken: string }> {
     return this.authService.login(req.user);
   }
 
@@ -61,9 +64,18 @@ export class AuthController {
     return this.authService.register(newUser);
   }
 
-  @ApiBearerAuth()
-  @Get('/profile')
+  @Get('/user')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'A user has been successfully fetched',
+    type: User,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
   me(@AuthUser() user: User): User {
     return user;
   }

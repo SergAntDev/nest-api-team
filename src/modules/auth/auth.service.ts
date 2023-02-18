@@ -32,12 +32,14 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id };
 
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
     };
   }
 
   async register(newUser: CreateUserDto): Promise<User> {
-    return this.usersService.create(newUser);
+    const user = await this.usersService.create(newUser);
+    delete user.password;
+    return user;
   }
 
   decodeToken(token: string): any {

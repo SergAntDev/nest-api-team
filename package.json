@@ -22,7 +22,10 @@
     "migration:generate": "npm run typeorm -- migration:generate",
     "migration:create": "npm run typeorm -- migration:create",
     "migration:revert": "npm run typeorm -- migration:revert",
-    "db:refresh": "npm run typeorm schema:drop && npm run migration:run"
+    "db:refresh": "npm run typeorm schema:drop && npm run migration:run",
+    "typeorm:seed": "npm run build && npx typeorm -d dist/db/seed/data-source.js",
+    "migration:seed:create": "npm run typeorm:seed -- migration:create",
+    "migration:seed:run": "npm run typeorm:seed -- migration:run"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
