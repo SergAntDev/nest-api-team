@@ -1,11 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
-  ApiTags,
-} from '@nestjs/swagger';
-import { Profiles } from './profiles.entity';
+import { Controller } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { ProfilesService } from './profiles.service';
 
@@ -13,18 +7,4 @@ import { ProfilesService } from './profiles.service';
 @Controller('profiles')
 export class ProfileController {
   constructor(private profileService: ProfilesService) {}
-
-  @Get()
-  @ApiCreatedResponse({
-    status: 200,
-    description: 'A profiles has been successfully fetched',
-    type: Profiles,
-  })
-  @ApiBadRequestResponse({
-    description: 'Something went wrong',
-  })
-  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
-  findAll(): Promise<Profiles[]> {
-    return this.profileService.getAll();
-  }
 }

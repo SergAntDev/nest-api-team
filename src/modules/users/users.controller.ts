@@ -19,7 +19,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { SETTINGS } from 'src/modules/users/pipes/user-create.pipe';
 import { UserService } from './users.service';
 import { User } from './users.entity';
 import { CreateUserDto } from './dto/user-create.req.dto';
@@ -27,6 +26,8 @@ import { UpdateUserDto } from './dto/user-update.req.dto';
 import { Roles } from './decorator/roles.decorator';
 import { RolesGuard } from './guard/roles.guard';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { UserRoles } from './enums/users.enum';
+import { RolesSelfGuard } from './guard/roles-self.guard';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -35,6 +36,8 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRoles.SUPERADMIN)
   @ApiCreatedResponse({
     description: 'Successfully created user',
     type: User,
@@ -44,13 +47,13 @@ export class UserController {
     type: User,
   })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
-  create(@Body(SETTINGS.VALIDATION_PIPE) createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
+  @Roles(UserRoles.SUPERADMIN)
   @ApiCreatedResponse({
     status: 200,
     description: 'A users has been successfully fetched',
@@ -86,8 +89,8 @@ export class UserController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
+  @UseGuards(JwtAuthGuard, RolesSelfGuard)
+  @Roles(UserRoles.SUPERADMIN)
   @ApiParam({
     name: 'id',
     required: true,
@@ -112,7 +115,7 @@ export class UserController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
+  @Roles(UserRoles.SUPERADMIN)
   @ApiParam({
     name: 'id',
     required: true,

@@ -38,7 +38,6 @@ export class AuthService {
 
   async register(newUser: CreateUserDto): Promise<User> {
     const user = await this.usersService.create(newUser);
-    delete user.password;
     return user;
   }
 

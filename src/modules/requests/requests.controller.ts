@@ -2,13 +2,11 @@ import {
   Body,
   Controller,
   Get,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
   Request,
   UseGuards,
-  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -22,6 +20,7 @@ import {
 import { RequestWithUser } from 'src/interfaces/request-user.interface';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Roles } from '../users/decorator/roles.decorator';
+import { UserRoles } from '../users/enums/users.enum';
 import { RolesGuard } from '../users/guard/roles.guard';
 import { CreateRequestDto } from './dto/create.dto';
 import { RequestsService } from './request.service';
@@ -36,7 +35,7 @@ export class RequestsController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles(UserRoles.SUPERADMIN)
   @ApiCreatedResponse({
     status: 200,
     description: 'A requests has been successfully fetched',
@@ -66,7 +65,7 @@ export class RequestsController {
 
   @Get(':id')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles(UserRoles.SUPERADMIN)
   @ApiOkResponse({
     status: 200,
     description: 'A user requests has been successfully fetched',
@@ -88,11 +87,7 @@ export class RequestsController {
   @ApiBadRequestResponse({ description: 'Something went wrong' })
   async create(
     @Request() req: RequestWithUser,
-    @Body(
-      new ValidationPipe({
-        errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-      }),
-    )
+    @Body()
     newRequest: CreateRequestDto,
   ): Promise<Requests> {
     const user = req.user;

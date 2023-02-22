@@ -4,7 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { UserService } from '../users.service';
 
 @Injectable()
-export class RolesGuard implements CanActivate {
+export class RolesSelfGuard implements CanActivate {
   constructor(private reflector: Reflector, private userService: UserService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -15,7 +15,9 @@ export class RolesGuard implements CanActivate {
       const { id } = request.user;
       const user = await this.userService.getUser({ where: { id } });
 
-      return roles.includes(user.role);
+      return (
+        roles.includes(user.role) || String(request.params.id) === String(id)
+      );
     }
 
     return false;

@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, Length, Matches } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsEmail,
+  IsNotEmpty,
+  Length,
+  Matches,
+  ValidateNested,
+} from 'class-validator';
 
 import { CreateProfileDto } from 'src/modules/profiles/dto/create.dto';
 import { MESSAGES, REGEX } from 'src/modules/users/pipes/user-create.pipe';
@@ -18,6 +25,7 @@ export class CreateUserDto {
     description: 'The email address of the User',
     example: 'admin@admin.com',
   })
+  @Transform(({ value }) => value?.toLowerCase().trim())
   @IsNotEmpty()
   @IsEmail()
   email: string;
@@ -45,5 +53,7 @@ export class CreateUserDto {
     description: 'User Profile',
     type: CreateProfileDto,
   })
-  profile: CreateProfileDto;
+  @ValidateNested()
+  @Type(() => CreateProfileDto)
+  profile?: CreateProfileDto | null;
 }

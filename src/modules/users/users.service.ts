@@ -18,40 +18,36 @@ export class UserService {
   ) {}
 
   async create(newUser: CreateUserDto): Promise<User> {
-    const user = this.usersRepository.create();
-    user.firstName = newUser.firstName;
-    user.secondName = newUser.secondName;
-    user.email = newUser.email;
-    user.password = newUser.password;
-
     try {
-      if (
-        newUser?.profile &&
-        Object.keys(newUser?.profile)?.length !== 0 &&
-        newUser?.profile?.constructor === Object
-      ) {
-        const newProfile = this.profilesRepository.create();
-        const { phone, slackId, position, department, birthDate, hiredDate } =
-          newUser.profile;
-        const savedProfile = await this.profilesRepository.save({
-          ...newProfile,
-          phone,
-          slackId,
-          position,
-          department,
-          birthDate,
-          hiredDate,
-        });
+      const user = this.usersRepository.create(newUser);
+
+      if (newUser?.profile && Object.keys(newUser?.profile)?.length !== 0) {
+        const newProfile = this.profilesRepository.create(newUser.profile);
+        const savedProfile = await this.profilesRepository.save(newProfile);
         user.profile = savedProfile;
       }
 
-      return await this.usersRepository.save(user);
+      const result = await this.usersRepository.save(user);
+      delete result.password;
+      return result;
     } catch (error) {
+      console.log(error, 11);
       if (error?.code === SqlErrorCode.DUPLICATE_ENTRY) {
-        throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: 'User already exists',
+            errors: { exeption: 'User already exists' },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
       }
       throw new HttpException(
-        'Something went wrong',
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Something went wrong',
+          errors: { exeption: 'Something went wrong' },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -101,7 +97,11 @@ export class UserService {
         return updatedUser;
       }
       throw new HttpException(
-        'A user with given id does not exist.',
+        {
+          status: HttpStatus.NOT_FOUND,
+          message: 'A user with given id does not exist.',
+          errors: { exeption: 'A user with given id does not exist.' },
+        },
         HttpStatus.NOT_FOUND,
       );
     } catch (error) {
@@ -109,7 +109,11 @@ export class UserService {
         throw error;
       }
       throw new HttpException(
-        'Something went wrong',
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Something went wrong',
+          errors: { exeption: 'Something went wrong' },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -121,13 +125,17 @@ export class UserService {
       if (user) {
         await this.usersRepository.delete(id);
         return {
-          statusCode: 200,
+          status: HttpStatus.OK,
           message: 'User was deleted',
         };
       }
 
       throw new HttpException(
-        'A user with given id does not exist.',
+        {
+          status: HttpStatus.NOT_FOUND,
+          message: 'A user with given id does not exist.',
+          errors: { exeption: 'A user with given id does not exist.' },
+        },
         HttpStatus.NOT_FOUND,
       );
     } catch (error) {
@@ -135,7 +143,11 @@ export class UserService {
         throw error;
       }
       throw new HttpException(
-        'Something went wrong',
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Something went wrong',
+          errors: { exeption: 'Something went wrong' },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -32,7 +32,7 @@ export class ValidationPipe implements PipeTransform<any> {
           message: 'Input data validation failed',
           errors: this.buildError(errors),
         },
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
     return value;

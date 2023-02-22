@@ -45,7 +45,12 @@ export class User extends BaseEntity {
   password: string;
 
   @ApiProperty({ description: 'User role' })
-  @Column({ type: 'enum', enum: UserRoles, default: UserRoles.EMPLOYEE })
+  @Column({
+    type: 'enum',
+    enum: UserRoles,
+    default: UserRoles.USER,
+    comment: '1 - superadmin, 2 - admin, 3 - user',
+  })
   role: UserRoles;
 
   @OneToMany(() => Requests, (requests) => requests.user)
@@ -56,7 +61,7 @@ export class User extends BaseEntity {
     eager: true,
   })
   @JoinColumn()
-  profile: Profiles;
+  profile?: Profiles | null;
 
   @ApiProperty({ description: 'When user was created' })
   @CreateDateColumn()
@@ -68,6 +73,6 @@ export class User extends BaseEntity {
 
   @BeforeInsert()
   async setPassword(password: string) {
-    this.password = await bcrypt.hash(password || this.password, 10);
+    this.password = bcrypt.hashSync(password || this.password, 10);
   }
 }

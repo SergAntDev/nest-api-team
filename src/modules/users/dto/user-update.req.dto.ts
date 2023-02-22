@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsEmail, IsNotEmpty, ValidateNested } from 'class-validator';
 
 import { CreateProfileDto } from 'src/modules/profiles/dto/create.dto';
 
@@ -16,6 +17,7 @@ export class UpdateUserDto {
     description: 'The email address of the User',
     example: 'admin@admin.com',
   })
+  @Transform(({ value }) => value?.toLowerCase().trim())
   @IsNotEmpty()
   @IsEmail()
   email: string;
@@ -24,5 +26,7 @@ export class UpdateUserDto {
     description: 'User Profile',
     type: CreateProfileDto,
   })
-  profile?: CreateProfileDto;
+  @ValidateNested()
+  @Type(() => CreateProfileDto)
+  profile?: CreateProfileDto | null;
 }

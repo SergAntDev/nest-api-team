@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -10,6 +11,8 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 
 import { User } from '../users/users.entity';
+import { Departments } from '../departments/departments.entity';
+import { Positions } from '../positions/positions.entity';
 
 @Entity({ name: 'profiles' })
 export class Profiles extends BaseEntity {
@@ -25,13 +28,17 @@ export class Profiles extends BaseEntity {
   @Column({ default: null })
   slackId: string;
 
-  @ApiProperty({ description: 'Position', example: 'developer' })
-  @Column({ default: null })
-  position: string;
+  @ApiProperty({ description: 'Position', type: Positions })
+  @ManyToOne(() => Positions, {
+    eager: true,
+  })
+  position: Positions;
 
-  @ApiProperty({ description: 'Department', example: 'developers' })
-  @Column({ default: null })
-  department: string;
+  @ApiProperty({ description: 'Department', type: Departments })
+  @ManyToOne(() => Departments, {
+    eager: true,
+  })
+  department: Departments;
 
   @ApiProperty({
     description: 'When user was born',
